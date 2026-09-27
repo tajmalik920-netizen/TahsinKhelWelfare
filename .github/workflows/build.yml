@@ -1,0 +1,45 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Extract ZIP File
+      run: |
+        unzip -q "*.zip"
+        ls -la
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+
+    - name: Build APK with Gradle
+      run: |
+        if [ -f "./gradlew" ]; then
+          chmod +x gradlew
+          ./gradlew assembleDebug
+        else
+          find . -maxdepth 2 -name "gradlew" -exec chmod +x {} \;
+          find . -maxdepth 2 -name "gradlew" -execdir ./gradlew assembleDebug \;
+        fi
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Tahsin-Khel-Welfare-APK
+        path: "**/build/outputs/apk/debug/*.apk"
+        
